@@ -51,7 +51,7 @@
 
         <div id="generator" class="tab-content active space-y-4">
             <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600 mb-4">
-                <p class="text-sm text-gray-300">Ready to build today's 30-minute show. The AI will pull your saved profile data and generate a full morning-show style broadcast.</p>
+                <p class="text-sm text-gray-300">Ready to build today's 30-minute show. The AI will pull your saved profile data, search the web for today's news, and generate a full morning-show style broadcast.</p>
             </div>
             
             <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl text-lg shadow-lg transition duration-300 flex items-center justify-center glowing-border">
@@ -66,6 +66,7 @@
                 <div class="w-full max-w-md bg-gray-700 rounded-full h-2.5 mt-2">
                     <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
                 </div>
+                <p class="text-xs text-gray-500 mt-2">Note: Multi-voice rendering takes about 4-5 minutes to avoid API rate limits.</p>
             </div>
 
             <div id="podcast-output" class="hidden space-y-6 pt-4 mt-4">
@@ -119,8 +120,8 @@
                         <input type="text" id="prof-name" value="Rob" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Location</label>
-                        <input type="text" id="prof-location" value="Ontario" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Location (Specific)</label>
+                        <input type="text" id="prof-location" value="Dunnville and Brantford, Ontario" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white">
                     </div>
                 </div>
                 <div>
@@ -137,7 +138,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">Hobbies, Tech & Pets</label>
-                    <textarea id="prof-hobbies" rows="3" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white">Retro console emulation (Nvidia Shield, Daijishō), Tony Hawk games, AI app development, smart glasses, and hanging with my 100lb Mastiff/Bulldog mix, Harvey.</textarea>
+                    <textarea id="prof-hobbies" rows="3" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white">IPTV services and tech, Retro console emulation (Nvidia Shield, Daijishō), Tony Hawk games, AI app development, smart glasses, and hanging with my 100lb Mastiff/Bulldog mix, Harvey.</textarea>
                 </div>
                 <div class="pt-4">
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-lg transition duration-300 shadow-lg">Save Profile Settings</button>
@@ -148,34 +149,29 @@
 
     <script>
         // --- STEP 1: PASTE YOUR API KEY HERE ---
-        const API_KEY = "AIzaSyAuQxfnvQ8LYfQe9h2Nj7lXs2ynrvRwbjs"; 
+        const API_KEY = "PASTE_YOUR_API_KEY_HERE"; 
         // -----------------------------------------
 
         const RESEARCH_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
         const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
 
-        // UI Elements
         const tabs = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         const generateBtn = document.getElementById('generateBtn');
-        const resultsDiv = document.getElementById('podcast-output');
+        const podcastOutputDiv = document.getElementById('podcast-output');
         const loadingDiv = document.getElementById('loading');
         const loadingMessage = document.getElementById('loading-message');
         const progressBar = document.getElementById('progress-bar');
-        const podcastOutputDiv = document.getElementById('podcast-output');
         const audioPlayerContainer = document.getElementById('audio-player-container');
         const summaryP = document.getElementById('summary');
         const errorDiv = document.getElementById('error');
         const errorMessage = document.getElementById('error-message');
-        const shareBtn = document.getElementById('shareBtn');
 
-        // Settings Elements
         const settingsModal = document.getElementById('settings-modal');
         const openSettingsBtn = document.getElementById('open-settings-btn');
         const closeSettingsBtn = document.getElementById('close-settings-btn');
         const profileForm = document.getElementById('profile-form');
 
-        // Tab Switching
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(item => item.classList.remove('active'));
@@ -185,11 +181,10 @@
             });
         });
 
-        // --- PROFILE LOGIC (localStorage) ---
         function checkProfile() {
             const savedProfile = localStorage.getItem('bobertsPodcastProfile');
             if (!savedProfile) {
-                settingsModal.classList.remove('hidden'); // Force open if no profile
+                settingsModal.classList.remove('hidden');
             } else {
                 const data = JSON.parse(savedProfile);
                 document.getElementById('prof-name').value = data.name || '';
@@ -218,9 +213,8 @@
         openSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
 
-        // --- SHOW GENERATION (The 30 Min Chunking Logic) ---
         generateBtn.addEventListener('click', async () => {
-            if (API_KEY === "PASTE_YOUR_API_KEY_HERE" || !API_KEY) {
+            if (API_KEY === "AIzaSyAuQxfnvQ8LYfQe9h2Nj7lXs2ynrvRwbjs" || !API_KEY) {
                 showError("Please paste your Google Gemini API key into the script.");
                 return;
             }
@@ -232,33 +226,42 @@
             }
             const profile = JSON.parse(savedProfile);
 
+            const todayOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const todayString = new Date().toLocaleDateString('en-CA', todayOptions);
+
             resetUI();
             loadingDiv.classList.remove('hidden');
             podcastOutputDiv.classList.add('hidden');
 
-            // The 5 segments required to hit ~30 minutes
+            // The updated segment architecture
             const segments = [
-                `Segment 1: Show intro, banter between the two hosts, and a detailed deep-dive into the local weather for ${profile.location}. Must follow this rule: ${profile.weather}`,
-                `Segment 2: Extensive sports update and commentary focused on the latest news, games, and stats for: ${profile.sports}. Let the hosts debate or discuss player performance.`,
+                `Segment 1: Show intro, high-energy banter between the two hosts, and a detailed deep-dive into the local weather for ${profile.location}. Must follow this rule: ${profile.weather}`,
+                `Segment 2: Extensive sports update. Start by searching for the biggest global sporting events happening right now (specifically the current events of the Winter Olympics), and then transition into commentary on the listener's favorite teams: ${profile.sports}.`,
                 `Segment 3: Industry News and deep dive. Focus heavily on: ${profile.work}. Discuss current market trends, building materials, and contractor challenges.`,
-                `Segment 4: Tech, hobbies, and lifestyle. The hosts should have a long, casual discussion about: ${profile.hobbies}. Keep it fun and conversational.`,
-                `Segment 5: Daily wrap-up, final thoughts from the hosts, a random interesting fact of the day, and the show outro.`
+                `Segment 4: The "Morning Radio Prep" segment. Search the web for bizarre daily news, "stupid criminals," funny viral stories, and weird current events. The hosts should be laughing and bantering about the absurdity of the stories, just like a real morning radio show.`,
+                `Segment 5: Tech, hobbies, and lifestyle talk focusing on ${profile.hobbies}. Follow this with a quick daily wrap-up and the show outro.`
             ];
 
             let fullScript = "";
             let audioPcmArrays = [];
-            let currentSampleRate = 24000; // Default Google TTS rate
+            let currentSampleRate = 24000;
 
             try {
                 // STEP 1: GENERATE SCRIPT CHUNKS
                 for (let i = 0; i < segments.length; i++) {
                     updateProgress(`Writing script segment ${i + 1} of 5...`, ((i) / (segments.length * 2)) * 100);
                     
-                    const systemPrompt = `You are the executive producer and head writer for a daily 30-minute morning show podcast. The show is hosted by a dynamic duo (Host 1 and Host 2) who have great banter, keep the energy up, and transition smoothly. This show is specifically tailored for a listener named ${profile.name}. Your job is to write highly detailed, conversational scripts. DO NOT SUMMARIZE. Expand on topics with interesting facts, host opinions, and conversational filler to reach a target length of 800 to 900 words for this specific segment. Format the script clearly with speaker tags: HOST 1: [Dialogue] and HOST 2: [Dialogue].`;
+                    const systemPrompt = `You are the executive producer and head writer for a daily 30-minute morning show podcast. The show is hosted by a dynamic duo (Host 1 is male, Host 2 is female). 
+                    CRITICAL RULES:
+                    1. TODAY'S DATE IS STRICTLY: ${todayString}. Speak about today as the current day. Do not talk about tomorrow.
+                    2. Address the listener (${profile.name}), but USE THEIR NAME VERY SPARINGLY. You are forbidden from using their name more than once per segment. Overusing the name sounds robotic.
+                    3. Strictly localize the weather forecast to ${profile.location}. Do not give a generic regional forecast.
+                    4. Write highly detailed, conversational scripts of 800-900 words per segment. Expand on topics.
+                    5. Format the script clearly with speaker tags EXACTLY like this: "HOST 1:" and "HOST 2:"`;
                     
                     const scriptResponse = await generateWithRetry(RESEARCH_API_URL, {
                         contents: [{ parts: [{ text: segments[i] }] }],
-                        tools: [{ "google_search": {} }], // Allows it to pull today's real weather/sports
+                        tools: [{ "googleSearch": {} }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                     });
 
@@ -266,19 +269,29 @@
                     if (!segmentText) throw new Error(`Failed to write segment ${i + 1}`);
                     
                     fullScript += `\n\n--- SEGMENT ${i + 1} ---\n\n` + segmentText;
-                    summaryP.textContent = fullScript; // Update UI live as it writes
+                    summaryP.textContent = fullScript;
                 }
 
-                // STEP 2: GENERATE AUDIO CHUNKS
-                // We split the full script into chunks small enough for the TTS API
-                const textChunks = fullScript.match(/(.|[\r\n]){1,3000}(\b|$)/g) || [fullScript];
+                // STEP 2: PARSE TEXT FOR MULTI-VOICE AND GENERATE AUDIO
+                const dialogueRegex = /(HOST 1:|HOST 2:)([\s\S]*?)(?=(HOST 1:|HOST 2:|$))/g;
+                let match;
+                let dialogueBlocks = [];
                 
-                for (let i = 0; i < textChunks.length; i++) {
-                    updateProgress(`Recording audio chunk ${i + 1} of ${textChunks.length}...`, 50 + ((i / textChunks.length) * 50));
+                while ((match = dialogueRegex.exec(fullScript)) !== null) {
+                    if (match[2].trim().length > 0) {
+                        dialogueBlocks.push({ speaker: match[1].trim(), text: match[2].trim() });
+                    }
+                }
+
+                for (let i = 0; i < dialogueBlocks.length; i++) {
+                    let block = dialogueBlocks[i];
+                    updateProgress(`Recording audio line ${i + 1} of ${dialogueBlocks.length}...`, 50 + ((i / dialogueBlocks.length) * 50));
                     
+                    let voiceChoice = block.speaker.includes("1") ? "Charon" : "Aoede";
+
                     const ttsResponse = await generateWithRetry(TTS_API_URL, {
-                        contents: [{ parts: [{ text: `Read the following in a clear and engaging voice: ${textChunks[i]}` }] }],
-                        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } } } }
+                        contents: [{ parts: [{ text: block.text }] }],
+                        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceChoice } } } }
                     });
 
                     const audioPart = ttsResponse?.candidates?.[0]?.content?.parts?.[0];
@@ -289,6 +302,9 @@
                     
                     const pcmData = new Int16Array(base64ToArrayBuffer(audioPart.inlineData.data));
                     audioPcmArrays.push(pcmData);
+
+                    // SMART THROTTLE: 4-second delay to absolutely ensure we stay under the 15 RPM free tier limit
+                    await new Promise(r => setTimeout(r, 4000));
                 }
 
                 // STEP 3: STITCH AUDIO TOGETHER
@@ -319,7 +335,6 @@
             }
         });
 
-        // --- UTILITY FUNCTIONS ---
         function updateProgress(message, percent) {
             loadingMessage.textContent = message;
             progressBar.style.width = `${percent}%`;
@@ -398,10 +413,8 @@
             }
         }
 
-        // Init
         window.addEventListener('load', checkProfile);
 
     </script>
 </body>
 </html>
-
