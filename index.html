@@ -66,7 +66,7 @@
                 <div class="w-full max-w-md bg-gray-700 rounded-full h-2.5 mt-2">
                     <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
                 </div>
-                <p class="text-xs text-gray-500 mt-2">Note: Multi-voice rendering takes about 4-5 minutes to avoid API rate limits.</p>
+                <p class="text-xs text-gray-500 mt-2">Note: Multi-voice rendering takes about 4-5 minutes to avoid free API rate limits.</p>
             </div>
 
             <div id="podcast-output" class="hidden space-y-6 pt-4 mt-4">
@@ -108,12 +108,18 @@
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Host Profile Setup</h2>
-                    <p class="text-gray-400 mt-1">Tell the AI what to cover. You only have to do this once.</p>
+                    <p class="text-gray-400 mt-1">Configure your app and secure your API key locally.</p>
                 </div>
                 <button id="close-settings-btn" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             
             <form id="profile-form" class="space-y-5 mt-6">
+                <div>
+                    <label class="block text-sm font-medium text-blue-400 mb-1">Free Gemini API Key</label>
+                    <input type="password" id="prof-apikey" class="w-full p-3 bg-gray-700 border border-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 text-white" placeholder="AIzaSy...">
+                    <p class="text-xs text-gray-400 mt-1">Saved securely on your device. Never shared with GitHub or Vercel.</p>
+                </div>
+                <hr class="border-gray-700 my-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">Name</label>
@@ -141,20 +147,13 @@
                     <textarea id="prof-hobbies" rows="3" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white">IPTV services and tech, Retro console emulation (Nvidia Shield, Daijishō), Tony Hawk games, AI app development, smart glasses, and hanging with my 100lb Mastiff/Bulldog mix, Harvey.</textarea>
                 </div>
                 <div class="pt-4">
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-lg transition duration-300 shadow-lg">Save Profile Settings</button>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-lg transition duration-300 shadow-lg">Save Profile & Key</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // --- STEP 1: PASTE YOUR API KEY HERE ---
-        const API_KEY = "AIzaSyCVR7W6_zaXprKqyXe9Pzq5zqCtxS_nRS4"; 
-        // -----------------------------------------
-
-        const RESEARCH_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-        const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
-
         const tabs = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         const generateBtn = document.getElementById('generateBtn');
@@ -172,6 +171,9 @@
         const closeSettingsBtn = document.getElementById('close-settings-btn');
         const profileForm = document.getElementById('profile-form');
 
+        // Wake Lock Variable
+        let wakeLock = null;
+
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(item => item.classList.remove('active'));
@@ -187,18 +189,24 @@
                 settingsModal.classList.remove('hidden');
             } else {
                 const data = JSON.parse(savedProfile);
+                document.getElementById('prof-apikey').value = data.apiKey || '';
                 document.getElementById('prof-name').value = data.name || '';
                 document.getElementById('prof-location').value = data.location || '';
                 document.getElementById('prof-weather').value = data.weather || '';
                 document.getElementById('prof-sports').value = data.sports || '';
                 document.getElementById('prof-work').value = data.work || '';
                 document.getElementById('prof-hobbies').value = data.hobbies || '';
+                
+                if (!data.apiKey) {
+                    settingsModal.classList.remove('hidden');
+                }
             }
         }
 
         profileForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const profileData = {
+                apiKey: document.getElementById('prof-apikey').value.trim(),
                 name: document.getElementById('prof-name').value,
                 location: document.getElementById('prof-location').value,
                 weather: document.getElementById('prof-weather').value,
@@ -214,17 +222,22 @@
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
 
         generateBtn.addEventListener('click', async () => {
-            if (API_KEY === "PASTE_YOUR_API_KEY_HERE" || !API_KEY) {
-                showError("Please paste your Google Gemini API key into the script.");
-                return;
-            }
-
             const savedProfile = localStorage.getItem('bobertsPodcastProfile');
             if (!savedProfile) {
                 settingsModal.classList.remove('hidden');
                 return;
             }
             const profile = JSON.parse(savedProfile);
+            const API_KEY = profile.apiKey;
+
+            if (!API_KEY) {
+                showError("Please enter your Google Gemini API key in the Profile Settings.");
+                settingsModal.classList.remove('hidden');
+                return;
+            }
+
+            const RESEARCH_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+            const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
 
             const todayOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const todayString = new Date().toLocaleDateString('en-CA', todayOptions);
@@ -233,7 +246,15 @@
             loadingDiv.classList.remove('hidden');
             podcastOutputDiv.classList.add('hidden');
 
-            // The updated segment architecture
+            // Request Wake Lock to keep phone screen on during generation
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.warn(`Wake Lock Error: ${err.message}`);
+            }
+
             const segments = [
                 `Segment 1: Show intro, high-energy banter between the two hosts, and a detailed deep-dive into the local weather for ${profile.location}. Must follow this rule: ${profile.weather}`,
                 `Segment 2: Extensive sports update. Start by searching for the biggest global sporting events happening right now (specifically the current events of the Winter Olympics), and then transition into commentary on the listener's favorite teams: ${profile.sports}.`,
@@ -289,22 +310,30 @@
                     
                     let voiceChoice = block.speaker.includes("1") ? "Charon" : "Aoede";
 
-                    const ttsResponse = await generateWithRetry(TTS_API_URL, {
-                        contents: [{ parts: [{ text: block.text }] }],
-                        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceChoice } } } }
-                    });
+                    try {
+                        const ttsResponse = await generateWithRetry(TTS_API_URL, {
+                            contents: [{ parts: [{ text: block.text }] }],
+                            generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceChoice } } } }
+                        });
 
-                    const audioPart = ttsResponse?.candidates?.[0]?.content?.parts?.[0];
-                    if (!audioPart?.inlineData?.data) throw new Error("Failed to generate audio data.");
-                    
-                    const mimeType = audioPart.inlineData.mimeType;
-                    currentSampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10) || 24000;
-                    
-                    const pcmData = new Int16Array(base64ToArrayBuffer(audioPart.inlineData.data));
-                    audioPcmArrays.push(pcmData);
+                        const audioPart = ttsResponse?.candidates?.[0]?.content?.parts?.[0];
+                        
+                        // CRASH PROTECTION: Skips the line if Google's safety filter blocks it
+                        if (!audioPart?.inlineData?.data) {
+                            console.warn("Google TTS skipped a line (likely safety filter): ", block.text);
+                        } else {
+                            const mimeType = audioPart.inlineData.mimeType;
+                            currentSampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10) || 24000;
+                            
+                            const pcmData = new Int16Array(base64ToArrayBuffer(audioPart.inlineData.data));
+                            audioPcmArrays.push(pcmData);
+                        }
+                    } catch (lineError) {
+                        console.error("Failed on a specific line, skipping: ", lineError);
+                    }
 
-                    // SMART THROTTLE: 4-second delay to absolutely ensure we stay under the 15 RPM free tier limit
-                    await new Promise(r => setTimeout(r, 4000));
+                    // FREE TIER THROTTLE: 4.5 seconds to prevent 429 Too Many Requests error 
+                    await new Promise(r => setTimeout(r, 4500)); 
                 }
 
                 // STEP 3: STITCH AUDIO TOGETHER
@@ -332,6 +361,12 @@
             } catch (err) {
                 console.error(err);
                 showError(err.message || "An error occurred while building the podcast.");
+            } finally {
+                // Release the screen wake lock when finished
+                if (wakeLock !== null) {
+                    await wakeLock.release();
+                    wakeLock = null;
+                }
             }
         });
 
