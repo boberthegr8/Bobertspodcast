@@ -3,434 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boberts Podcast Maker - Research-Backed Podcasts</title>
+    <title>Boberts Podcast Maker - 30 Min Daily Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border: 4px solid #374151;
+            border-top: 4px solid #3B82F6;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .glowing-border {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-        /* Tab styles */
-        .tab-btn {
-            transition: all 0.3s ease;
-        }
+        .glowing-border { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .tab-btn { transition: all 0.3s ease; }
         .tab-btn.active {
-            background-color: #3B82F6; /* blue-600 */
+            background-color: #3B82F6;
             color: white;
             border-bottom-color: transparent;
         }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4 relative">
 
-    <div class="w-full max-w-3xl mx-auto p-6 md:p-8 bg-gray-800 rounded-2xl shadow-2xl space-y-6">
+    <div class="w-full max-w-4xl mx-auto p-6 md:p-8 bg-gray-800 rounded-2xl shadow-2xl space-y-6">
         <div class="text-center">
-            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Boberts Podcast Maker</h1>
-            <p class="text-gray-400 mt-2">Your all-in-one podcast creation studio.</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Boberts Daily Podcast</h1>
+            <p class="text-gray-400 mt-2">Your personalized 30-minute morning show.</p>
         </div>
 
-        <!-- Tabs -->
-        <div class="border-b border-gray-700">
+        <div class="flex justify-between items-center border-b border-gray-700">
             <nav class="flex space-x-2" aria-label="Tabs">
-                <button class="tab-btn active font-medium py-2 px-4 rounded-t-lg text-gray-300" data-tab="generator">Podcast Generator</button>
-                <button class="tab-btn font-medium py-2 px-4 rounded-t-lg text-gray-300" data-tab="text-to-audio">Text-to-Audio</button>
+                <button class="tab-btn active font-medium py-2 px-4 rounded-t-lg text-gray-300" data-tab="generator">Daily Show</button>
+                <button class="tab-btn font-medium py-2 px-4 rounded-t-lg text-gray-300" data-tab="text-to-audio">Custom TTS</button>
             </nav>
+            <button id="open-settings-btn" class="text-gray-400 hover:text-white pb-2 pr-2 transition flex items-center">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Profile Setup
+            </button>
         </div>
 
-        <!-- Generator Tab Content -->
         <div id="generator" class="tab-content active space-y-4">
-            <label for="prompt" class="block text-sm font-medium text-gray-300">Your Podcast Topic</label>
-            <textarea id="prompt" rows="3" class="w-full p-4 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300 glowing-border" placeholder="e.g., 'The history of artificial intelligence'"></textarea>
-            <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
-                Generate Podcast
+            <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600 mb-4">
+                <p class="text-sm text-gray-300">Ready to build today's 30-minute show. The AI will pull your saved profile data and generate a full morning-show style broadcast.</p>
+            </div>
+            
+            <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl text-lg shadow-lg transition duration-300 flex items-center justify-center glowing-border">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                Generate Today's Show
             </button>
-             <!-- Results Section -->
-            <div id="results" class="hidden space-y-6 pt-4">
-                <div id="loading" class="text-center hidden"><div class="loader mx-auto"></div><p id="loading-message" class="mt-4 text-gray-400"></p></div>
-                <div id="podcast-output" class="hidden space-y-4">
-                     <h2 class="text-2xl font-semibold text-white border-b-2 border-gray-700 pb-2">Your Podcast is Ready</h2>
-                    <div id="audio-player-container" class="bg-gray-700 p-4 rounded-lg"></div>
-                    <button id="shareBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">Share Podcast</button>
-                    <div class="p-4 bg-gray-700 rounded-lg"><h3 class="font-semibold text-lg mb-2">Podcast Script</h3><p id="summary" class="text-gray-300 whitespace-pre-wrap"></p></div>
-                    <div class="p-4 bg-gray-700 rounded-lg"><h3 class="font-semibold text-lg mb-2">Sources</h3><ul id="sources" class="list-disc list-inside text-blue-400 space-y-1"></ul></div>
-                    <!-- Chatbot Section -->
-                    <div id="chatbot" class="pt-4 space-y-4">
-                        <h3 class="text-xl font-semibold">Refine with Chat</h3>
-                        <div id="chat-history" class="h-40 overflow-y-auto p-3 bg-gray-700 rounded-lg border border-gray-600"></div>
-                        <div class="flex space-x-2">
-                            <input type="text" id="chat-input" class="flex-grow p-3 bg-gray-600 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 'Make it funnier'">
-                            <button id="chat-send" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">Send</button>
-                        </div>
-                         <button id="regenerateAudioBtn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center hidden">Regenerate Audio from New Script</button>
-                    </div>
+
+            <div id="loading" class="hidden flex flex-col items-center justify-center py-8 space-y-4 bg-gray-800 rounded-lg border border-gray-700 mt-4">
+                <div class="loader"></div>
+                <h3 class="text-xl font-semibold text-blue-400">Building your 30-minute show...</h3>
+                <p id="loading-message" class="text-gray-400 text-center max-w-md">Initializing AI engines...</p>
+                <div class="w-full max-w-md bg-gray-700 rounded-full h-2.5 mt-2">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="podcast-output" class="hidden space-y-6 pt-4 mt-4">
+                <div class="bg-gray-700 p-6 rounded-xl border border-gray-600 shadow-inner">
+                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                        <span class="bg-green-500 w-3 h-3 rounded-full mr-3 animate-pulse"></span>
+                        Today's Broadcast
+                    </h2>
+                    <div id="audio-player-container" class="w-full mb-4"></div>
+                    <button id="shareBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">Share Link to Episode</button>
+                </div>
+
+                <div class="p-4 bg-gray-700 rounded-lg border border-gray-600">
+                    <h3 class="font-semibold text-lg mb-3 text-blue-300">Full Script Transcript</h3>
+                    <div id="summary" class="text-gray-300 whitespace-pre-wrap leading-relaxed h-96 overflow-y-auto pr-2 custom-scrollbar text-sm"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Text-to-Audio Tab Content -->
         <div id="text-to-audio" class="tab-content space-y-4">
-            <label for="tts-input" class="block text-sm font-medium text-gray-300">Paste Your Text</label>
-            <textarea id="tts-input" rows="8" class="w-full p-4 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300" placeholder="Paste any text here to convert it to audio..."></textarea>
-            <button id="tts-generate-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">Create Audio</button>
-            <div id="tts-loading" class="text-center hidden"><div class="loader mx-auto"></div><p class="mt-4 text-gray-400">Generating audio...</p></div>
-            <div id="tts-audio-container" class="bg-gray-700 p-4 rounded-lg hidden"></div>
-        </div>
-
-        <!-- Error Message -->
-        <div id="error" class="hidden bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg" role="alert">
-            <strong class="font-bold">Oops!</strong>
-            <span class="block sm:inline" id="error-message">Something went wrong. Please try again.</span>
-        </div>
-    </div>
-
-    <script>
-        // --- STEP 1: PASTE YOUR API KEY HERE ---
-        const API_KEY = "AIzaSyCMPmP1fqZzhBWIY84FOpw78D7MXd_i7iY";
-        // -----------------------------------------
-
-        const tabs = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(item => item.classList.remove('active'));
-                tab.classList.add('active');
-                const target = document.getElementById(tab.dataset.tab);
-                tabContents.forEach(content => content.classList.remove('active'));
-                target.classList.add('active');
-            });
-        });
-
-        const generateBtn = document.getElementById('generateBtn');
-        const promptInput = document.getElementById('prompt');
-        const resultsDiv = document.getElementById('results');
-        const loadingDiv = document.getElementById('loading');
-        const loadingMessage = document.getElementById('loading-message');
-        const podcastOutputDiv = document.getElementById('podcast-output');
-        const audioPlayerContainer = document.getElementById('audio-player-container');
-        const summaryP = document.getElementById('summary');
-        const sourcesUl = document.getElementById('sources');
-        const errorDiv = document.getElementById('error');
-        const errorMessage = document.getElementById('error-message');
-        
-        // Chatbot elements
-        const chatHistory = document.getElementById('chat-history');
-        const chatInput = document.getElementById('chat-input');
-        const chatSendBtn = document.getElementById('chat-send');
-        const regenerateAudioBtn = document.getElementById('regenerateAudioBtn');
-
-        // Text-to-Audio elements
-        const ttsInput = document.getElementById('tts-input');
-        const ttsGenerateBtn = document.getElementById('tts-generate-btn');
-        const ttsLoading = document.getElementById('tts-loading');
-        const ttsAudioContainer = document.getElementById('tts-audio-container');
-        
-        // Share button
-        const shareBtn = document.getElementById('shareBtn');
-
-        const RESEARCH_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-        const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
-
-        // --- Event Listeners ---
-        generateBtn.addEventListener('click', generateInitialPodcast);
-        chatSendBtn.addEventListener('click', handleChat);
-        chatInput.addEventListener('keyup', (e) => { if(e.key === 'Enter') handleChat(); });
-        regenerateAudioBtn.addEventListener('click', () => generateAudio(summaryP.textContent, audioPlayerContainer, 'Generating new audio...'));
-        ttsGenerateBtn.addEventListener('click', () => generateAudio(ttsInput.value, ttsAudioContainer, 'Generating audio...', ttsLoading));
-        shareBtn.addEventListener('click', sharePodcast);
-        window.addEventListener('load', loadFromShareLink);
-
-
-        // --- Core Functions ---
-        async function generateInitialPodcast() {
-            if (isApiKeyMissing()) return;
-            const prompt = promptInput.value.trim();
-            if (!prompt) { showError("Please enter a topic."); return; }
-
-            resetUI();
-            loadingDiv.classList.remove('hidden');
-            loadingMessage.textContent = "Performing deep dive research...";
-
-            try {
-                const researchPrompt = `Perform a very deep dive research investigation into the topic: "${prompt}". Synthesize the findings into a detailed, well-structured, and engaging podcast script of about 500-600 words. The script should cover key aspects, historical context, current findings, and future implications.`;
-                const researchResponse = await generateWithRetry(RESEARCH_API_URL, {
-                    contents: [{ parts: [{ text: researchPrompt }] }],
-                    tools: [{ "google_search": {} }],
-                    systemInstruction: { parts: [{ text: "You are an expert researcher and compelling podcast host. Create a script that is deeply informative, rich with detail, engaging, and easy to understand for an intelligent audience. Structure it with a strong introduction, multiple body sections covering different facets of the topic, and a thoughtful conclusion." }] },
-                });
-
-                const candidate = researchResponse.candidates?.[0];
-                if (!candidate?.content?.parts?.[0]?.text) throw new Error("Failed to generate research content.");
-                
-                const researchText = candidate.content.parts[0].text;
-                summaryP.textContent = researchText;
-                updateSources(candidate.groundingMetadata);
-
-                await generateAudio(researchText, audioPlayerContainer, "Research complete. Generating audio...");
-                
-                loadingDiv.classList.add('hidden');
-                podcastOutputDiv.classList.remove('hidden');
-                chatHistory.innerHTML = ''; // Clear chat history for new podcast
-
-            } catch (err) { handleError(err); }
-        }
-
-        async function handleChat() {
-            if (isApiKeyMissing()) return;
-            const userMessage = chatInput.value.trim();
-            if (!userMessage) return;
-            
-            const currentScript = summaryP.textContent;
-            appendChatMessage('User', userMessage);
-            chatInput.value = '';
-            loadingMessage.textContent = "Revising script based on your feedback...";
-            loadingDiv.classList.remove('hidden');
-            podcastOutputDiv.classList.add('hidden');
-
-            try {
-                const chatPrompt = `Given the following podcast script, please revise it based on this instruction: "${userMessage}".\n\nHere is the current script:\n\n${currentScript}`;
-                const response = await generateWithRetry(RESEARCH_API_URL, {
-                    contents: [{ parts: [{ text: chatPrompt }] }],
-                    systemInstruction: { parts: [{ text: "You are a helpful assistant that revises podcast scripts based on user feedback. Only output the revised script." }] }
-                });
-
-                const newScript = response.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!newScript) throw new Error("Failed to revise the script.");
-
-                summaryP.textContent = newScript;
-                appendChatMessage('AI', 'Here is the revised script. You can regenerate the audio with the button below.');
-                regenerateAudioBtn.classList.remove('hidden');
-
-            } catch(err) { handleError(err); }
-            finally {
-                loadingDiv.classList.add('hidden');
-                podcastOutputDiv.classList.remove('hidden');
-            }
-        }
-        
-        async function generateAudio(text, container, loadingMsg, specificLoader) {
-            if (isApiKeyMissing() || !text) {
-                showError("No text to generate audio from.");
-                return;
-            }
-            const loader = specificLoader || loadingDiv;
-            const msgElement = specificLoader ? null : loadingMessage;
-
-            if (msgElement) msgElement.textContent = loadingMsg;
-            loader.classList.remove('hidden');
-            container.classList.add('hidden');
-            container.innerHTML = '';
-
-            try {
-                const ttsResponse = await generateWithRetry(TTS_API_URL, {
-                    contents: [{ parts: [{ text: `Read the following in a clear and engaging voice: ${text}` }] }],
-                    generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } } } }
-                });
-
-                const audioPart = ttsResponse?.candidates?.[0]?.content?.parts?.[0];
-                if (!audioPart?.inlineData?.data) throw new Error("Failed to generate audio data.");
-
-                const audioUrl = createAudioUrl(audioPart.inlineData.data, audioPart.inlineData.mimeType);
-                const audioElement = document.createElement('audio');
-                audioElement.controls = true;
-                audioElement.src = audioUrl;
-                audioElement.className = "w-full";
-                container.appendChild(audioElement);
-                container.classList.remove('hidden');
-
-            } catch (err) { handleError(err); }
-            finally { loader.classList.add('hidden'); }
-        }
-
-        function sharePodcast() {
-            const script = summaryP.textContent;
-            if (!script) return;
-            const encodedScript = btoa(unescape(encodeURIComponent(script))); // More robust encoding
-            const shareUrl = `${window.location.href.split('#')[0]}#script=${encodedScript}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Boberts Podcast',
-                    text: 'Check out this podcast I made!',
-                    url: shareUrl,
-                });
-            } else {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert("Share link copied to clipboard!");
-                });
-            }
-        }
-
-        function loadFromShareLink() {
-            if (window.location.hash.startsWith('#script=')) {
-                try {
-                    const encodedScript = window.location.hash.substring(8);
-                    const script = decodeURIComponent(escape(atob(encodedScript)));
-                    if (script) {
-                        tabs[0].click(); // Switch to generator tab
-                        promptInput.value = "Loaded from shared link.";
-                        resultsDiv.classList.remove('hidden');
-                        podcastOutputDiv.classList.remove('hidden');
-                        summaryP.textContent = script;
-                        generateAudio(script, audioPlayerContainer, 'Generating audio from shared link...');
-                    }
-                } catch (e) {
-                    console.error("Failed to decode shared script:", e);
-                    showError("Could not load the shared podcast link.");
-                }
-            }
-        }
-
-        // --- UI & Utility Functions ---
-        function resetUI() {
-            resultsDiv.classList.remove('hidden');
-            podcastOutputDiv.classList.add('hidden');
-            errorDiv.classList.add('hidden');
-            loadingDiv.classList.add('hidden');
-            audioPlayerContainer.innerHTML = '';
-            sourcesUl.innerHTML = '';
-            regenerateAudioBtn.classList.add('hidden');
-        }
-
-        function appendChatMessage(sender, message) {
-            const msgDiv = document.createElement('div');
-            msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
-            chatHistory.appendChild(msgDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-
-        function updateSources(groundingMetadata) {
-            sourcesUl.innerHTML = '';
-            if (groundingMetadata?.groundingAttributions) {
-                groundingMetadata.groundingAttributions.forEach(attr => {
-                    if (attr.web?.uri && attr.web?.title) {
-                        const li = document.createElement('li');
-                        li.innerHTML = `<a href="${attr.web.uri}" target="_blank" rel="noopener noreferrer" class="hover:underline">${attr.web.title}</a>`;
-                        sourcesUl.appendChild(li);
-                    }
-                });
-            }
-        }
-
-        function createAudioUrl(base64Data, mimeType) {
-            const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-            const pcmData = base64ToArrayBuffer(base64Data);
-            const pcm16 = new Int16Array(pcmData);
-            const wavBlob = pcmToWav(pcm16, sampleRate);
-            return URL.createObjectURL(wavBlob);
-        }
-
-        function handleError(err) {
-            console.error(err);
-            showError(err.message || "An unknown error occurred.");
-        }
-
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorDiv.classList.remove('hidden');
-            loadingDiv.classList.add('hidden');
-            ttsLoading.classList.add('hidden');
-        }
-
-        function isApiKeyMissing() {
-            if (API_KEY === "PASTE_YOUR_API_KEY_HERE" || !API_KEY) {
-                showError("Please paste your Google Gemini API key into the script section of the index.html file.");
-                return true;
-            }
-            return false;
-        }
-        
-        async function generateWithRetry(url, payload, maxRetries = 3) { /* ... existing code ... */ }
-        function base64ToArrayBuffer(base64) { /* ... existing code ... */ }
-        function pcmToWav(pcmData, sampleRate) { /* ... existing code ... */ }
-        function writeString(view, offset, string) { /* ... existing code ... */ }
-    </script>
-    <script>
-        // Separate script tag to avoid issues with function hoisting and variable scope
-        async function generateWithRetry(url, payload, maxRetries = 3) {
-            let attempt = 0;
-            while (attempt < maxRetries) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) {
-                        const errorBody = await response.text();
-                        console.error(`HTTP error! status: ${response.status}`, errorBody);
-                        throw new Error(`API request failed with status ${response.status}.`);
-                    }
-                    return await response.json();
-                } catch (error) {
-                    attempt++;
-                    if (attempt >= maxRetries) throw error;
-                    const delay = Math.pow(2, attempt) * 1000;
-                    console.warn(`Attempt ${attempt} failed. Retrying in ${delay}ms...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
-            }
-        }
-        function base64ToArrayBuffer(base64) {
-            const binary_string = window.atob(base64);
-            const len = binary_string.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binary_string.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-        function pcmToWav(pcmData, sampleRate) {
-            const numChannels = 1, bitsPerSample = 16;
-            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-            const blockAlign = numChannels * (bitsPerSample / 8);
-            const dataSize = pcmData.length * (bitsPerSample / 8);
-            const buffer = new ArrayBuffer(44 + dataSize);
-            const view = new DataView(buffer);
-            writeString(view, 0, 'RIFF');
-            view.setUint32(4, 36 + dataSize, true);
-            writeString(view, 8, 'WAVE');
-            writeString(view, 12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, numChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, byteRate, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, bitsPerSample, true);
-            writeString(view, 36, 'data');
-            view.setUint32(40, dataSize, true);
-            for (let i = 0; i < pcmData.length; i++) {
-                view.setInt16(44 + i * 2, pcmData[i], true);
-            }
-            return new Blob([view], { type: 'audio/wav' });
-        }
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-    </script>
-</body>
-</html>
-
+            <label for="tts-input" class="block text-sm font-medium text-gray-3
