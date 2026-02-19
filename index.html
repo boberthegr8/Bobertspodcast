@@ -261,7 +261,7 @@
                     
                     const scriptResponse = await generateWithRetry(RESEARCH_API_URL, {
                         contents: [{ parts: [{ text: segments[i] }] }],
-                        tools: [{ "googleSearch": {} }],
+                        tools: [{ "google_search": {} }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                     });
 
@@ -418,3 +418,4 @@
     </script>
 </body>
 </html>
+
