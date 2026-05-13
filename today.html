@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bobert's Daily Briefing</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f0f1a; color: #e8e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; }
+    .header { text-align: center; margin-bottom: 28px; }
+    .header h1 { font-size: 1.8rem; font-weight: 700; color: #c084fc; margin-bottom: 4px; }
+    .header .date { font-size: 0.9rem; color: #888; }
+    .player-card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 20px; padding: 28px; width: 100%; max-width: 540px; margin-bottom: 20px; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-badge.loading { background: #2d2d00; color: #f0c040; }
+    .status-badge.ready { background: #002d00; color: #40f080; }
+    .status-badge.playing { background: #1a003d; color: #c084fc; }
+    .status-badge.error { background: #2d0000; color: #f08080; }
+    .status-badge.not-ready { background: #1a1a1a; color: #888; }
+    .now-speaking { font-size: 1rem; color: #c084fc; margin-bottom: 16px; min-height: 48px; line-height: 1.5; font-style: italic; }
+    .progress-bar-container { background: #0f0f1a; border-radius: 8px; height: 6px; margin-bottom: 20px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #7c3aed, #c084fc); border-radius: 8px; width: 0%; transition: width 0.5s ease; }
+    .controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn { padding: 12px 24px; border-radius: 12px; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-play { background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; flex: 1; max-width: 200px; }
+    .btn-play:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-stop { background: #2d2d4e; color: #e8e8f0; }
+    .btn-regen { background: #1a2d1a; color: #40f080; font-size: 0.85rem; padding: 10px 18px; }
+    .speed-control { display: flex; align-items: center; gap: 8px; margin-top: 16px; justify-content: center; }
+    .speed-control label { font-size: 0.8rem; color: #888; }
+    .speed-control select { background: #0f0f1a; border: 1px solid #2d2d4e; color: #e8e8f0; border-radius: 8px; padding: 4px 8px; font-size: 0.85rem; }
+    .script-card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 20px; padding: 24px; width: 100%; max-width: 540px; margin-bottom: 16px; }
+    .script-card h3 { font-size: 0.85rem; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .script-text { font-size: 0.88rem; line-height: 1.7; color: #bbb; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+    .info-box { background: #0f0f1a; border: 1px solid #2d2d4e; border-radius: 12px; padding: 14px 18px; width: 100%; max-width: 540px; font-size: 0.8rem; color: #666; line-height: 1.6; }
+    .info-box strong { color: #888; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #444; border-top-color: #c084fc; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>Bobert's Daily Briefing</h1>
+  <div class="date" id="dateDisplay"></div>
+</div>
+<div class="player-card">
+  <div class="status-badge loading" id="statusBadge"><span class="spinner"></span>Loading...</div>
+  <div class="now-speaking" id="nowSpeaking">Fetching today's briefing...</div>
+  <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="controls">
+    <button class="btn btn-play" id="playBtn" disabled onclick="startPlayback()">Play</button>
+    <button class="btn btn-stop" onclick="stopPlayback()">Stop</button>
+  </div>
+  <div class="speed-control">
+    <label>Speed:</label>
+    <select id="speedSelect">
+      <option value="0.85">0.85x</option>
+      <option value="1.0" selected>1.0x</option>
+      <option value="1.15">1.15x</option>
+      <option value="1.3">1.3x</option>
+      <option value="1.5">1.5x</option>
+    </select>
+  </div>
+</div>
+<div class="script-card" id="scriptCard" style="display:none">
+  <h3>Today's Script</h3>
+  <div class="script-text" id="scriptText"></div>
+</div>
+<div class="info-box">
+  <strong>How this works:</strong> Every morning at 5:00 AM, the server generates a fresh 30-minute briefing using live news, weather, and sports data. Open this page, tap Play, and go.<br><br>
+  <strong>Tip:</strong> Bookmark bobertspodcast.vercel.app/today.html on your phone.
+</div>
+<br>
+<button class="btn btn-regen" onclick="triggerRegen()" id="regenBtn" style="display:none">Regenerate Today's Script</button>
+<script>
+  let fullScript='',currentIndex=0,isPlaying=false,wordChunks=[];
+  const now=new Date();
+  document.getElementById('dateDisplay').textContent=now.toLocaleDateString('en-CA',{timeZone:'America/Toronto',weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  function setStatus(type,text){const b=document.getElementById('statusBadge');b.className='status-badge '+type;b.innerHTML=type==='loading'?'<span class="spinner"></span>'+text:text;}
+  function setNow(text){document.getElementById('nowSpeaking').textContent=text;}
+  async function loadScript(){
+    try{
+      const res=await fetch('/api/get-script');
+      const data=await res.json();
+      if(data.available&&data.script){
+        fullScript=data.script;
+        setStatus('ready','Ready to Play');
+        setNow('Script loaded. Tap Play to start your morning briefing.');
+        document.getElementById('playBtn').disabled=false;
+        document.getElementById('scriptCard').style.display='block';
+        document.getElementById('scriptText').textContent=fullScript;
+        document.getElementById('regenBtn').style.display='block';
+      }else{
+        setStatus('not-ready','Not Ready Yet');
+        setNow(data.message||'Script not generated yet for today.');
+        document.getElementById('regenBtn').style.display='block';
+      }
+    }catch(err){setStatus('error','Error');setNow('Could not connect. Check your connection.');}
+  }
+  function splitChunks(text){
+    const sentences=text.match(/[^.!?]+[.!?]+/g)||[text];
+    const chunks=[];let cur='';
+    for(const s of sentences){if((cur+s).length>220&&cur.length>0){chunks.push(cur.trim());cur=s;}else{cur+=s;}}
+    if(cur.trim())chunks.push(cur.trim());
+    return chunks;
+  }
+  function startPlayback(){
+    if(!fullScript||isPlaying)return;
+    isPlaying=true;currentIndex=0;wordChunks=splitChunks(fullScript);
+    document.getElementById('playBtn').disabled=true;
+    setStatus('playing','Playing');
+    speakChunk(currentIndex);
+  }
+  function speakChunk(idx){
+    if(idx>=wordChunks.length||!isPlaying){onDone();return;}
+    const chunk=wordChunks[idx];
+    const u=new SpeechSynthesisUtterance(chunk);
+    u.rate=parseFloat(document.getElementById('speedSelect').value);
+    const voices=window.speechSynthesis.getVoices();
+    const v=voices.find(v=>v.name.includes('Google')&&v.lang.startsWith('en'))||voices.find(v=>v.lang.startsWith('en-'))||voices[0];
+    if(v)u.voice=v;
+    const pct=Math.round((idx/wordChunks.length)*100);
+    document.getElementById('progressBar').style.width=pct+'%';
+    setNow('"'+chunk.substring(0,90)+(chunk.length>90?'...':'')+'"');
+    u.onend=()=>{currentIndex++;speakChunk(currentIndex);};
+    u.onerror=()=>{currentIndex++;speakChunk(currentIndex);};
+    window.speechSynthesis.speak(u);
+  }
+  function stopPlayback(){
+    isPlaying=false;window.speechSynthesis.cancel();
+    setStatus(fullScript?'ready':'not-ready',fullScript?'Stopped':'Not Ready');
+    setNow('Stopped. Tap Play to restart.');
+    document.getElementById('progressBar').style.width='0%';
+    document.getElementById('playBtn').disabled=!fullScript;
+  }
+  function onDone(){
+    isPlaying=false;document.getElementById('progressBar').style.width='100%';
+    setStatus('ready','Done');setNow("That's your briefing for today, Rob. Go crush it.");
+    document.getElementById('playBtn').disabled=false;
+  }
+  async function triggerRegen(){
+    const btn=document.getElementById('regenBtn');
+    btn.textContent='Generating... (~20 seconds)';btn.disabled=true;
+    setStatus('loading','Generating...');setNow('Asking Gemini for today news and weather...');
+    try{
+      const res=await fetch('/api/generate-script');const data=await res.json();
+      if(data.success){btn.textContent='Done! Reloading...';setTimeout(()=>location.reload(),1000);}
+      else{btn.textContent='Failed - try again';btn.disabled=false;setNow('Error: '+(data.error||'Unknown'));}
+    }catch(err){btn.textContent='Failed - try again';btn.disabled=false;}
+  }
+  window.speechSynthesis.onvoiceschanged=()=>{};
+  loadScript();
+</script>
+</body>
+</html>
