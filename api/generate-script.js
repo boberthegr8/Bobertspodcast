@@ -1,5 +1,3 @@
-const { put } = require('@vercel/blob');
-
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -11,7 +9,7 @@ module.exports = async function handler(req, res) {
   const todayKey = now.toISOString().split('T')[0];
   const prompt = 'Today is ' + dateStr + '. Generate a 30-minute morning podcast script for Rob Flagg, Operations Manager at Atlas Engineered Products in Ontario Canada. Interests: Maple Leafs, NFL, AI, IPTV, country music, dog Harvey. Search web for real info. Segments: INTRO 2min, WEATHER 3min Orillia/Barrie Celsius, TOP NEWS 8min, SPORTS 6min Leafs+NFL, TECH-AI 4min, BUILDING INDUSTRY 3min, DAY AHEAD 2min. Spoken text only, no markdown, ~4000 words, start with: Good morning Rob!';
   try {
-    const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + GEMINI_KEY, {
+    const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_KEY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], tools: [{ googleSearch: {} }], generationConfig: { temperature: 0.9, maxOutputTokens: 8192 } })
