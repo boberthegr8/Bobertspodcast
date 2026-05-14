@@ -30,20 +30,21 @@ module.exports = async function handler(req, res) {
     if (!script) return res.status(500).json({ error: 'No script returned', raw: data });
 
     // Store in Vercel Blob using REST API directly — no npm package needed
-    const blobRes = await fetch('https://blob.vercel-storage.com/scripts/' + todayKey + '.txt', {
+    // Store script in Vercel Blob (private store)
+    const filename = 'scripts/' + todayKey + '.txt';
+    const blobRes = await fetch('https://blob.vercel-storage.com/' + filename, {
       method: 'PUT',
       headers: {
         'Authorization': 'Bearer ' + BLOB_TOKEN,
-        'Content-Type': 'text/plain; charset=utf-8',
-        'x-content-type': 'text/plain',
-        'x-cache-control-max-age': '3600'
+        'Content-Type': 'text/plain; charset=utf-8'
       },
       body: script
     });
 
-    if (!blobRes.ok) return res.status(500).json({ error: 'Blob upload failed', detail: await blobRes.text() });
+    const blobText = await blobRes.text();
+    if (!blobRes.ok) return res.status(500).json({ error: 'Blob upload failed', status: blobRes.status, detail: blobText });
 
-    const blobData = await blobRes.json();
+    const blobData = JSON.parse(blobText);
     return res.status(200).json({ success: true, date: todayKey, wordCount: script.split(' ').length, url: blobData.url });
 
   } catch (err) {
